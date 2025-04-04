@@ -17,10 +17,18 @@ import anime from 'animejs';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
+interface AnalysisData {
+  categories: {
+    [key: string]: {
+      score: number;
+    };
+  };
+}
+
 export default function HomePage() {
-  const [url, setUrl] = useState('');
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [url, setUrl] = useState<string>('');
+  const [data, setData] = useState<AnalysisData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const analyzeUrl = async (e: React.FormEvent) => {
@@ -33,7 +41,7 @@ export default function HomePage() {
       if (!response.ok) {
         throw new Error('Failed to fetch analysis data');
       }
-      const result = await response.json();
+      const result: AnalysisData = await response.json();
       setData(result);
       anime({
         targets: '.score-bar',
@@ -50,7 +58,7 @@ export default function HomePage() {
   };
 
   const getScore = (category: string) => {
-    return data?.categories[category]?.score * 100 || 0;
+    return (data?.categories[category]?.score ?? 0) * 100;
   };
 
   const overallScore = (
@@ -83,7 +91,7 @@ export default function HomePage() {
     labels: ['Overall Score'],
     datasets: [
       {
-        data: [overallScore, 100 - overallScore],
+        data: [parseFloat(overallScore), 100 - parseFloat(overallScore)],
         backgroundColor: ['#4CAF50', '#E0E0E0'],
         borderWidth: 2,
         hoverOffset: 8,
